@@ -2,829 +2,491 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
   <meta name="theme-color" content="#0f6b3e" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
-  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="default" />
   <meta name="apple-mobile-web-app-title" content="ISU" />
-  <title>ISU — Family Companion</title>
   <link rel="manifest" href="./manifest.webmanifest" />
-  <link rel="apple-touch-icon" href="./icons/icon-192.png" />
+  <link rel="apple-touch-icon" href="./IMG_4571.JPG" />
+  <title>ISU — Family Companion</title>
   <style>
     :root {
+      --green: #0f6b3e;
+      --green-dark: #0a4d2c;
       --bg: #f4f6f5;
-      --surface: #ffffff;
-      --surface-muted: #eef2f0;
-      --text: #14201a;
-      --muted: #55665d;
-      --border: #dce4df;
-      --accent: #0f6b3e;
-      --accent-soft: #e4f3eb;
-      --user-bubble: #0f6b3e;
-      --user-text: #ffffff;
-      --danger: #dc2626;
+      --card: #ffffff;
+      --border: #dfe5e1;
+      --text: #16211b;
+      --muted: #5b6b62;
     }
-
-    body[data-mode="muslim_hausa"] {
-      --bg: #f6f5f0;
-      --surface: #ffffff;
-      --surface-muted: #f0eee4;
-      --text: #1c1b15;
-      --muted: #635f4d;
-      --border: #e2decb;
-      --accent: #1b5e4b;
-      --accent-soft: #e5f1ed;
-      --user-bubble: #1b5e4b;
-      --user-text: #ffffff;
-    }
-
     * { box-sizing: border-box; }
-
     body {
       margin: 0;
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
       background: var(--bg);
       color: var(--text);
-      min-height: 100dvh;
       display: flex;
       flex-direction: column;
+      height: 100dvh;
     }
-
     header {
-      position: sticky;
-      top: 0;
-      z-index: 10;
-      background: var(--surface);
+      background: var(--card);
       border-bottom: 1px solid var(--border);
       padding: 12px 16px;
     }
-
-    .header-top {
+    .top-bar {
+      max-width: 760px;
+      margin: 0 auto 10px;
       display: flex;
       align-items: center;
       justify-content: space-between;
-      gap: 10px;
-      max-width: 780px;
-      margin: 0 auto;
+      gap: 8px;
+      flex-wrap: wrap;
     }
-
     .brand {
       display: flex;
       align-items: center;
       gap: 10px;
     }
-
-    .brand-badge {
-      width: 40px;
-      height: 40px;
-      border-radius: 12px;
-      background: var(--accent);
+    .badge {
+      width: 36px;
+      height: 36px;
+      border-radius: 10px;
+      background: var(--green);
       color: #fff;
+      font-weight: 700;
       display: grid;
       place-items: center;
-      font-weight: 700;
-      font-size: 0.95rem;
-      letter-spacing: 0.04em;
+      font-size: 13px;
     }
-
-    .brand-title {
-      font-weight: 700;
-      font-size: 1.08rem;
-      line-height: 1.2;
-    }
-
-    .status-row {
-      display: flex;
-      align-items: center;
-      gap: 6px;
-      font-size: 0.78rem;
-      color: var(--muted);
-    }
-
-    .dot {
-      width: 8px;
-      height: 8px;
-      border-radius: 50%;
-      background: #9aa5a0;
-    }
-
-    .dot.online { background: #16a34a; }
-    .dot.error { background: var(--danger); }
-
-    .header-actions {
-      display: flex;
-      align-items: center;
-      gap: 6px;
-      flex-wrap: wrap;
-      justify-content: flex-end;
-    }
-
-    button.ghost-btn,
-    button.install-btn {
+    .brand-title { font-weight: 700; font-size: 16px; }
+    .brand-sub { font-size: 12px; color: var(--muted); display: flex; align-items: center; gap: 6px; }
+    .dot { width: 8px; height: 8px; border-radius: 50%; background: #16a34a; display: inline-block; }
+    .actions { display: flex; gap: 6px; flex-wrap: wrap; }
+    .pill-btn {
+      background: #fff;
       border: 1px solid var(--border);
-      background: var(--surface);
-      color: var(--text);
-      border-radius: 9px;
-      padding: 7px 10px;
-      font-size: 0.8rem;
+      border-radius: 999px;
+      padding: 6px 12px;
+      font-size: 12px;
       font-weight: 600;
+      color: var(--text);
       cursor: pointer;
     }
-
-    button.ghost-btn.active-toggle {
-      background: var(--accent-soft);
-      border-color: var(--accent);
-      color: var(--accent);
+    .pill-btn.active {
+      background: #e8f5ee;
+      border-color: var(--green);
+      color: var(--green);
     }
-
-    button.install-btn {
-      background: var(--accent-soft);
-      border-color: transparent;
-      color: var(--accent);
-      display: none;
-    }
-
-    button.install-btn.visible { display: inline-flex; }
-
-    .controls-grid {
-      max-width: 780px;
-      margin: 10px auto 0;
-      display: grid;
-      grid-template-columns: 1.3fr 1fr;
-      gap: 8px;
-    }
-
-    @media (max-width: 560px) {
-      .controls-grid {
-        grid-template-columns: 1fr;
-      }
-    }
-
-    .segmented-bar {
+    .toggles {
+      max-width: 760px;
+      margin: 0 auto;
       display: grid;
       grid-template-columns: 1fr 1fr;
-      gap: 6px;
-      background: var(--surface-muted);
-      padding: 4px;
-      border-radius: 12px;
+      gap: 10px;
     }
-
+    .seg-group {
+      background: #eef1ef;
+      padding: 3px;
+      border-radius: 999px;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+    }
     .seg-btn {
       border: none;
       background: transparent;
-      color: var(--muted);
-      padding: 8px 10px;
-      border-radius: 9px;
-      font-size: 0.84rem;
+      padding: 7px 10px;
+      border-radius: 999px;
+      font-size: 13px;
       font-weight: 600;
+      color: var(--muted);
       cursor: pointer;
-      transition: all 0.15s ease;
     }
-
     .seg-btn.active {
-      background: var(--surface);
+      background: #fff;
       color: var(--text);
-      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+      box-shadow: 0 1px 3px rgba(0,0,0,0.08);
     }
-
     main {
       flex: 1;
-      width: 100%;
-      max-width: 780px;
-      margin: 0 auto;
+      overflow-y: auto;
       padding: 16px;
+    }
+    .container {
+      max-width: 760px;
+      margin: 0 auto;
       display: flex;
       flex-direction: column;
       gap: 12px;
     }
-
     .chips {
       display: flex;
       flex-wrap: wrap;
       gap: 8px;
+      margin-bottom: 4px;
     }
-
     .chip {
+      background: #fff;
       border: 1px solid var(--border);
-      background: var(--surface);
-      color: var(--accent);
-      border-radius: 999px;
-      padding: 7px 12px;
-      font-size: 0.82rem;
+      color: var(--green);
       font-weight: 600;
+      font-size: 13px;
+      padding: 8px 14px;
+      border-radius: 999px;
       cursor: pointer;
     }
-
-    .chat-list {
-      display: flex;
-      flex-direction: column;
-      gap: 12px;
-      padding-bottom: 12px;
-    }
-
     .msg {
-      max-width: 86%;
-      padding: 12px 14px;
+      background: var(--card);
+      border: 1px solid var(--border);
       border-radius: 16px;
-      font-size: 0.96rem;
-      line-height: 1.5;
-      white-space: pre-wrap;
-      word-break: break-word;
+      padding: 12px 14px;
+      max-width: 85%;
+      line-height: 1.45;
+      font-size: 15px;
     }
-
     .msg.user {
       align-self: flex-end;
-      background: var(--user-bubble);
-      color: var(--user-text);
-      border-bottom-right-radius: 4px;
+      background: var(--green);
+      color: #fff;
+      border-color: var(--green);
     }
-
-    .msg.assistant {
-      align-self: flex-start;
-      background: var(--surface);
-      color: var(--text);
-      border: 1px solid var(--border);
-      border-bottom-left-radius: 4px;
-    }
-
     .msg-meta {
+      margin-top: 8px;
       display: flex;
       align-items: center;
       justify-content: space-between;
-      gap: 10px;
-      margin-top: 8px;
-      font-size: 0.75rem;
+      font-size: 11px;
       color: var(--muted);
     }
-
-    .speak-btn {
+    .msg.user .msg-meta { color: rgba(255,255,255,0.8); }
+    .listen-btn {
       border: 1px solid var(--border);
-      background: var(--surface-muted);
-      color: var(--text);
-      border-radius: 7px;
-      padding: 3px 8px;
-      font-size: 0.75rem;
+      background: #f8faf9;
+      border-radius: 8px;
+      padding: 3px 10px;
+      font-size: 11px;
       font-weight: 600;
       cursor: pointer;
     }
-
-    .composer-wrap {
-      position: sticky;
-      bottom: 0;
-      background: var(--bg);
-      padding: 8px 16px calc(12px + env(safe-area-inset-bottom));
+    footer {
+      background: var(--card);
       border-top: 1px solid var(--border);
+      padding: 10px 16px;
     }
-
-    .voice-hint {
-      max-width: 780px;
-      margin: 0 auto 6px;
-      font-size: 0.78rem;
-      color: var(--muted);
-      display: none;
-    }
-
-    .voice-hint.visible {
-      display: block;
-    }
-
     .composer {
-      max-width: 780px;
+      max-width: 760px;
       margin: 0 auto;
       display: flex;
       gap: 8px;
-      align-items: flex-end;
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: 16px;
-      padding: 8px 8px 8px 14px;
+      align-items: center;
     }
-
-    textarea {
+    .composer input {
       flex: 1;
-      border: none;
-      resize: none;
-      background: transparent;
-      color: var(--text);
-      font-family: inherit;
-      font-size: 0.96rem;
-      line-height: 1.4;
-      max-height: 140px;
+      border: 1px solid var(--border);
+      border-radius: 999px;
+      padding: 11px 16px;
+      font-size: 15px;
       outline: none;
     }
-
-    button.mic-btn {
+    .btn-talk {
       border: 1px solid var(--border);
-      background: var(--surface-muted);
-      color: var(--text);
-      border-radius: 12px;
-      padding: 10px 12px;
-      font-size: 0.88rem;
+      background: #f4f6f5;
+      border-radius: 999px;
+      padding: 10px 14px;
       font-weight: 600;
+      font-size: 13px;
       cursor: pointer;
-      white-space: nowrap;
     }
-
-    button.mic-btn.recording {
-      background: var(--danger);
-      border-color: var(--danger);
-      color: #ffffff;
+    .btn-talk.listening {
+      background: #fee2e2;
+      border-color: #ef4444;
+      color: #b91c1c;
     }
-
-    button.send-btn {
+    .btn-send {
       border: none;
-      background: var(--accent);
-      color: #ffffff;
-      border-radius: 12px;
-      padding: 10px 16px;
-      font-size: 0.9rem;
+      background: var(--green);
+      color: #fff;
+      border-radius: 999px;
+      padding: 10px 18px;
       font-weight: 600;
+      font-size: 13px;
       cursor: pointer;
-      white-space: nowrap;
-    }
-
-    button.send-btn:disabled,
-    button.mic-btn:disabled {
-      opacity: 0.55;
-      cursor: not-allowed;
-    }
-
-    dialog {
-      border: 1px solid var(--border);
-      border-radius: 14px;
-      padding: 18px;
-      max-width: 420px;
-      width: calc(100% - 32px);
-      background: var(--surface);
-      color: var(--text);
-    }
-
-    dialog input {
-      width: 100%;
-      padding: 10px 12px;
-      margin: 10px 0 14px;
-      border: 1px solid var(--border);
-      border-radius: 10px;
-      font-size: 0.92rem;
-    }
-
-    .dialog-actions {
-      display: flex;
-      justify-content: flex-end;
-      gap: 8px;
     }
   </style>
 </head>
-<body data-mode="ghanaian">
+<body>
   <header>
-    <div class="header-top">
+    <div class="top-bar">
       <div class="brand">
-        <div class="brand-badge">ISU</div>
+        <div class="badge">ISU</div>
         <div>
           <div class="brand-title">ISU</div>
-          <div class="status-row">
-            <span id="statusDot" class="dot"></span>
-            <span id="statusText">Checking in...</span>
-          </div>
+          <div class="brand-sub"><span class="dot"></span><span id="statusText">Ready to talk</span></div>
         </div>
       </div>
-      <div class="header-actions">
-        <button id="installBtn" class="install-btn" type="button">Install App</button>
-        <button id="autoVoiceBtn" class="ghost-btn" type="button" aria-pressed="false">Voice Reply: Off</button>
-        <button id="newChatBtn" class="ghost-btn" type="button">New Chat</button>
-        <button id="keyBtn" class="ghost-btn" type="button">Access Key</button>
+      <div class="actions">
+        <button class="pill-btn" id="voiceToggleBtn" onclick="toggleVoiceReply()">Voice Reply: Off</button>
+        <button class="pill-btn" onclick="resetChat()">New Chat</button>
+        <button class="pill-btn" onclick="promptAccessKey()">Access Key</button>
       </div>
     </div>
-
-    <div class="controls-grid">
-      <div class="segmented-bar" role="tablist" aria-label="Cultural mode">
-        <button id="modeGhanaian" class="seg-btn active" type="button">
-          Ghanaian
-        </button>
-        <button id="modeMuslimHausa" class="seg-btn" type="button">
-          Muslim / Hausa
-        </button>
+    <div class="toggles">
+      <div class="seg-group">
+        <button class="seg-btn active" id="cultGhanaian" onclick="setCulture('ghanaian')">Ghanaian</button>
+        <button class="seg-btn" id="cultHausa" onclick="setCulture('hausa')">Muslim / Hausa</button>
       </div>
-
-      <div class="segmented-bar" role="tablist" aria-label="Son or Daughter style">
-        <button id="roleSon" class="seg-btn active" type="button">
-          Son
-        </button>
-        <button id="roleDaughter" class="seg-btn" type="button">
-          Daughter
-        </button>
+      <div class="seg-group">
+        <button class="seg-btn active" id="roleSon" onclick="setRole('son')">AB (Son)</button>
+        <button class="seg-btn" id="roleDaughter" onclick="setRole('daughter')">Samira (Daughter)</button>
       </div>
     </div>
   </header>
 
   <main>
-    <div id="starterChips" class="chips"></div>
-    <div id="chatList" class="chat-list" aria-live="polite"></div>
+    <div class="container" id="chatContainer">
+      <div class="chips" id="quickChips"></div>
+    </div>
   </main>
 
-  <div class="composer-wrap">
-    <div id="voiceHint" class="voice-hint">Listening... speak naturally in English, Twi, or Hausa.</div>
-    <form id="chatForm" class="composer">
-      <textarea
-        id="promptInput"
-        rows="1"
-        placeholder="Talk or type with ISU in English, Twi, or Hausa..."
-        required
-      ></textarea>
-      <button id="micBtn" class="mic-btn" type="button" title="Speak with your voice">Talk</button>
-      <button id="sendBtn" class="send-btn" type="submit">Send</button>
+  <footer>
+    <form class="composer" onsubmit="handleSend(event)">
+      <input id="msgInput" type="text" placeholder="Talk with AB or Samira in English, Twi, or Hausa..." autocomplete="off" />
+      <button type="button" class="btn-talk" id="talkBtn" onclick="toggleMic()">Talk</button>
+      <button type="submit" class="btn-send">Send</button>
     </form>
-  </div>
-
-  <dialog id="keyDialog">
-    <form method="dialog">
-      <h3 style="margin: 0 0 6px;">App Access Key</h3>
-      <p style="margin: 0; font-size: 0.85rem; color: var(--muted);">
-        Saved locally in this browser and sent as <code>X-App-Access-Key</code> if your Worker requires it.
-      </p>
-      <input id="keyInput" type="password" placeholder="Enter APP_ACCESS_KEY (optional)" autocomplete="off" />
-      <div class="dialog-actions">
-        <button id="clearKeyBtn" class="ghost-btn" type="button">Clear</button>
-        <button class="ghost-btn" value="cancel">Cancel</button>
-        <button id="saveKeyBtn" class="send-btn" value="default">Save</button>
-      </div>
-    </form>
-  </dialog>
+  </footer>
 
   <script>
-    const API_BASE = "https://isu-ghana-api.innomoderno.workers.dev";
-    const STORAGE_KEY = "isu_access_key_v1";
-    const STORAGE_MODE = "isu_mode_v1";
-    const STORAGE_ROLE = "isu_family_role_v1";
-    const STORAGE_AUTO_VOICE = "isu_auto_voice_v1";
-
-    const GREETINGS = {
-      ghanaian: {
-        son: "Maakye! It's your son ISU here. How are you doing today, and what's on your mind?",
-        daughter: "Maakye! It's your daughter ISU here. How are you feeling today, and what would you like to talk about?"
-      },
-      muslim_hausa: {
-        son: "Assalamu Alaikum! Ina kwana? It's your son ISU here. How is your day going—anything you want us to talk through?",
-        daughter: "Assalamu Alaikum! Ina kwana? It's your daughter ISU here. How are you doing today—what's on your mind?"
-      }
-    };
-
-    const STARTERS = {
-      ghanaian: [
-        "Hey ISU, how is your day going?",
-        "Help me reply warmly in Twi and English.",
-        "Let's chat about my plans for today."
-      ],
-      muslim_hausa: [
-        "Assalamu Alaikum ISU, ina kwana?",
-        "Help me say this respectfully in Hausa and English.",
-        "Let's organize my day gently."
-      ]
-    };
-
-    let currentMode = localStorage.getItem(STORAGE_MODE) || "ghanaian";
-    let currentRole = localStorage.getItem(STORAGE_ROLE) || "son";
-    let autoVoice = localStorage.getItem(STORAGE_AUTO_VOICE) === "true";
+    const WORKER_URL = "https://innomoderno.workers.dev";
+    let culture = "ghanaian";
+    let role = "son";
+    let voiceReply = false;
     let history = [];
-    let deferredPrompt = null;
-    let recognition = null;
-    let isRecording = false;
-
-    const statusDot = document.getElementById("statusDot");
-    const statusText = document.getElementById("statusText");
-    const starterChips = document.getElementById("starterChips");
-    const chatList = document.getElementById("chatList");
-    const chatForm = document.getElementById("chatForm");
-    const promptInput = document.getElementById("promptInput");
-    const sendBtn = document.getElementById("sendBtn");
-    const micBtn = document.getElementById("micBtn");
-    const voiceHint = document.getElementById("voiceHint");
-    const autoVoiceBtn = document.getElementById("autoVoiceBtn");
-    const newChatBtn = document.getElementById("newChatBtn");
-    const installBtn = document.getElementById("installBtn");
-    const keyBtn = document.getElementById("keyBtn");
-    const keyDialog = document.getElementById("keyDialog");
-    const keyInput = document.getElementById("keyInput");
-    const saveKeyBtn = document.getElementById("saveKeyBtn");
-    const clearKeyBtn = document.getElementById("clearKeyBtn");
-
-    function updateAutoVoiceUI() {
-      autoVoiceBtn.textContent = autoVoice ? "Voice Reply: On" : "Voice Reply: Off";
-      autoVoiceBtn.classList.toggle("active-toggle", autoVoice);
-      autoVoiceBtn.setAttribute("aria-pressed", String(autoVoice));
-    }
+    let selectedVoice = null;
 
     function pickBestVoice() {
-      if (!("speechSynthesis" in window)) return null;
-      const voices = window.speechSynthesis.getVoices();
-      if (!voices.length) return null;
-
-      const femaleHints = ["female", "woman", "samantha", "victoria", "karen", "moira", "tessa", "zira", "aria", "jenny"];
-      const maleHints = ["male", "man", "daniel", "alex", "david", "guy", "fred", "oliver", "ryan", "george"];
-      const hints = currentRole === "daughter" ? femaleHints : maleHints;
-
-      const enVoices = voices.filter((v) => v.lang && v.lang.toLowerCase().startsWith("en"));
-      const pool = enVoices.length ? enVoices : voices;
-
-      return (
-        pool.find((v) => hints.some((h) => v.name.toLowerCase().includes(h))) ||
-        pool[0]
-      );
-    }
-
-    function speakText(text, btn = null) {
       if (!("speechSynthesis" in window)) return;
-      if (window.speechSynthesis.speaking) {
-        window.speechSynthesis.cancel();
-        if (btn) {
-          btn.textContent = "Listen";
+      const voices = window.speechSynthesis.getVoices();
+      if (!voices.length) return;
+
+      // Prefer African/West African locales first, then warmer natural UK/Commonwealth voices
+      const preferredPatterns = [
+        /en-GH/i,
+        /en-NG/i,
+        /en-KE/i,
+        /en-ZA/i,
+        /Tessa/i,
+        /Daniel/i,
+        /Serena/i,
+        /Moira/i,
+        /Rishi/i,
+        /Google UK English/i,
+        /en-GB/i
+      ];
+
+      for (const pattern of preferredPatterns) {
+        const match = voices.find(v => pattern.test(v.lang) || pattern.test(v.name));
+        if (match) {
+          selectedVoice = match;
           return;
         }
       }
-
-      const utterance = new SpeechSynthesisUtterance(text);
-      const chosenVoice = pickBestVoice();
-      if (chosenVoice) utterance.voice = chosenVoice;
-      utterance.pitch = currentRole === "daughter" ? 1.12 : 0.94;
-      utterance.rate = 0.98;
-
-      if (btn) btn.textContent = "Stop";
-      utterance.onend = () => { if (btn) btn.textContent = "Listen"; };
-      utterance.onerror = () => { if (btn) btn.textContent = "Listen"; };
-      window.speechSynthesis.speak(utterance);
-    }
-
-    function renderChips() {
-      starterChips.innerHTML = "";
-      STARTERS[currentMode].forEach((text) => {
-        const btn = document.createElement("button");
-        btn.type = "button";
-        btn.className = "chip";
-        btn.textContent = text;
-        btn.addEventListener("click", () => {
-          promptInput.value = text;
-          promptInput.focus();
-        });
-        starterChips.appendChild(btn);
-      });
-    }
-
-    function resetConversation() {
-      if ("speechSynthesis" in window) window.speechSynthesis.cancel();
-      history = [];
-      chatList.innerHTML = "";
-      appendMessage("assistant", GREETINGS[currentMode][currentRole], true);
-    }
-
-    function updateSelectors(resetThread = false) {
-      document.body.dataset.mode = currentMode;
-      document.getElementById("modeGhanaian").classList.toggle("active", currentMode === "ghanaian");
-      document.getElementById("modeMuslimHausa").classList.toggle("active", currentMode === "muslim_hausa");
-      document.getElementById("roleSon").classList.toggle("active", currentRole === "son");
-      document.getElementById("roleDaughter").classList.toggle("active", currentRole === "daughter");
-      renderChips();
-
-      if (resetThread || chatList.children.length === 0) {
-        resetConversation();
-      }
-    }
-
-    function setMode(mode) {
-      currentMode = mode === "muslim_hausa" ? "muslim_hausa" : "ghanaian";
-      localStorage.setItem(STORAGE_MODE, currentMode);
-      updateSelectors(chatList.children.length <= 1);
-    }
-
-    function setFamilyRole(role) {
-      currentRole = role === "daughter" ? "daughter" : "son";
-      localStorage.setItem(STORAGE_ROLE, currentRole);
-      updateSelectors(chatList.children.length <= 1);
-    }
-
-    function appendMessage(role, text, isGreeting = false) {
-      const div = document.createElement("div");
-      div.className = `msg ${role}`;
-      div.textContent = text;
-
-      let speakBtn = null;
-      if (role === "assistant") {
-        const meta = document.createElement("div");
-        meta.className = "msg-meta";
-        const label = document.createElement("span");
-        const modeLabel = currentMode === "muslim_hausa" ? "Muslim / Hausa" : "Ghanaian";
-        const roleLabel = currentRole === "daughter" ? "Daughter" : "Son";
-        label.textContent = isGreeting ? `ISU (${roleLabel})` : `ISU · ${modeLabel} · ${roleLabel}`;
-
-        speakBtn = document.createElement("button");
-        speakBtn.type = "button";
-        speakBtn.className = "speak-btn";
-        speakBtn.textContent = "Listen";
-        speakBtn.addEventListener("click", () => speakText(text, speakBtn));
-
-        meta.append(label, speakBtn);
-        div.appendChild(meta);
-      }
-
-      chatList.appendChild(div);
-      div.scrollIntoView({ behavior: "smooth", block: "end" });
-
-      if (role === "assistant" && !isGreeting && autoVoice) {
-        speakText(text, speakBtn);
-      }
-    }
-
-    async function checkStatus() {
-      try {
-        const res = await fetch(`${API_BASE}/api/status`);
-        const data = await res.json();
-        if (res.ok && data.ok) {
-          statusDot.className = "dot online";
-          statusText.textContent = "Ready to talk";
-        } else {
-          statusDot.className = "dot error";
-          statusText.textContent = "Check API status";
-        }
-      } catch {
-        statusDot.className = "dot error";
-        statusText.textContent = "Offline / unreachable";
-      }
-    }
-
-    function setupSpeechRecognition() {
-      const SpeechRec = window.SpeechRecognition || window.webkitSpeechRecognition;
-      if (!SpeechRec) {
-        micBtn.style.display = "none";
-        return;
-      }
-
-      recognition = new SpeechRec();
-      recognition.interimResults = true;
-      recognition.continuous = false;
-
-      recognition.onstart = () => {
-        isRecording = true;
-        micBtn.classList.add("recording");
-        micBtn.textContent = "Stop";
-        voiceHint.classList.add("visible");
-      };
-
-      recognition.onresult = (event) => {
-        let transcript = "";
-        for (let i = 0; i < event.results.length; i++) {
-          transcript += event.results[i][0].transcript;
-        }
-        promptInput.value = transcript.trim();
-        promptInput.style.height = "auto";
-        promptInput.style.height = `${Math.min(promptInput.scrollHeight, 140)}px`;
-      };
-
-      recognition.onend = () => {
-        isRecording = false;
-        micBtn.classList.remove("recording");
-        micBtn.textContent = "Talk";
-        voiceHint.classList.remove("visible");
-        promptInput.focus();
-      };
-
-      recognition.onerror = () => {
-        isRecording = false;
-        micBtn.classList.remove("recording");
-        micBtn.textContent = "Talk";
-        voiceHint.classList.remove("visible");
-      };
-
-      micBtn.addEventListener("click", () => {
-        if (isRecording) {
-          recognition.stop();
-          return;
-        }
-        if ("speechSynthesis" in window) window.speechSynthesis.cancel();
-        recognition.lang = currentMode === "muslim_hausa" ? "ha-NG" : "en-GH";
-        recognition.start();
-      });
-    }
-
-    document.getElementById("modeGhanaian").addEventListener("click", () => setMode("ghanaian"));
-    document.getElementById("modeMuslimHausa").addEventListener("click", () => setMode("muslim_hausa"));
-    document.getElementById("roleSon").addEventListener("click", () => setFamilyRole("son"));
-    document.getElementById("roleDaughter").addEventListener("click", () => setFamilyRole("daughter"));
-
-    autoVoiceBtn.addEventListener("click", () => {
-      autoVoice = !autoVoice;
-      localStorage.setItem(STORAGE_AUTO_VOICE, String(autoVoice));
-      updateAutoVoiceUI();
-      if (!autoVoice && "speechSynthesis" in window) {
-        window.speechSynthesis.cancel();
-      }
-    });
-
-    newChatBtn.addEventListener("click", resetConversation);
-
-    keyBtn.addEventListener("click", () => {
-      keyInput.value = localStorage.getItem(STORAGE_KEY) || "";
-      keyDialog.showModal();
-    });
-
-    saveKeyBtn.addEventListener("click", () => {
-      const val = keyInput.value.trim();
-      if (val) localStorage.setItem(STORAGE_KEY, val);
-      else localStorage.removeItem(STORAGE_KEY);
-    });
-
-    clearKeyBtn.addEventListener("click", () => {
-      keyInput.value = "";
-      localStorage.removeItem(STORAGE_KEY);
-    });
-
-    async function sendPrompt(prompt) {
-      appendMessage("user", prompt);
-      promptInput.value = "";
-      promptInput.style.height = "auto";
-      sendBtn.disabled = true;
-      micBtn.disabled = true;
-
-      const headers = { "Content-Type": "application/json" };
-      const savedKey = localStorage.getItem(STORAGE_KEY);
-      if (savedKey) headers["X-App-Access-Key"] = savedKey;
-
-      try {
-        const res = await fetch(`${API_BASE}/api/ask`, {
-          method: "POST",
-          headers,
-          body: JSON.stringify({
-            mode: currentMode,
-            familyRole: currentRole,
-            prompt,
-            history: history.slice(-10)
-          })
-        });
-        const data = await res.json();
-        if (!res.ok) {
-          appendMessage("assistant", `Error (${res.status}): ${data.error || "Request failed."}`);
-        } else {
-          const reply = data.reply || "(No response text returned)";
-          appendMessage("assistant", reply);
-          history.push({ role: "user", text: prompt }, { role: "model", text: reply });
-        }
-      } catch {
-        appendMessage("assistant", "I couldn't reach the connection just now. Let's try again in a moment.");
-      } finally {
-        sendBtn.disabled = false;
-        micBtn.disabled = false;
-        promptInput.focus();
-      }
-    }
-
-    chatForm.addEventListener("submit", async (e) => {
-      e.preventDefault();
-      const prompt = promptInput.value.trim();
-      if (!prompt) return;
-      await sendPrompt(prompt);
-    });
-
-    promptInput.addEventListener("keydown", async (e) => {
-      if (e.key === "Enter" && !e.shiftKey) {
-        e.preventDefault();
-        const prompt = promptInput.value.trim();
-        if (prompt && !sendBtn.disabled) {
-          await sendPrompt(prompt);
-        }
-      }
-    });
-
-    promptInput.addEventListener("input", () => {
-      promptInput.style.height = "auto";
-      promptInput.style.height = `${Math.min(promptInput.scrollHeight, 140)}px`;
-    });
-
-    window.addEventListener("beforeinstallprompt", (e) => {
-      e.preventDefault();
-      deferredPrompt = e;
-      installBtn.classList.add("visible");
-    });
-
-    installBtn.addEventListener("click", async () => {
-      if (!deferredPrompt) return;
-      deferredPrompt.prompt();
-      await deferredPrompt.userChoice;
-      deferredPrompt = null;
-      installBtn.classList.remove("visible");
-    });
-
-    if ("serviceWorker" in navigator) {
-      window.addEventListener("load", () => {
-        navigator.serviceWorker.register("./service-worker.js").catch(() => {});
-      });
+      selectedVoice = voices[0];
     }
 
     if ("speechSynthesis" in window) {
-      window.speechSynthesis.onvoiceschanged = () => pickBestVoice();
+      pickBestVoice();
+      window.speechSynthesis.onvoiceschanged = pickBestVoice;
     }
 
-    updateAutoVoiceUI();
-    setupSpeechRecognition();
-    updateSelectors(true);
-    checkStatus();
+    function personaName() {
+      return role === "son" ? "AB" : "Samira";
+    }
+
+    function personaLabel() {
+      return role === "son" ? "AB (Son)" : "Samira (Daughter)";
+    }
+
+    function getGreeting() {
+      if (culture === "ghanaian" && role === "son") {
+        return "Maakye! It's your son AB here. How are you doing today, and what's on your mind?";
+      }
+      if (culture === "ghanaian" && role === "daughter") {
+        return "Maakye! It's your daughter Samira here. Hope your day is going smoothly—how can I help you today?";
+      }
+      if (culture === "hausa" && role === "son") {
+        return "Assalamu alaikum! It's your son AB here. Ina kwana? How are you feeling today?";
+      }
+      return "Assalamu alaikum! It's your daughter Samira here. Ina kwana? What would you like to talk about today?";
+    }
+
+    function renderChips() {
+      const name = personaName();
+      const chips = culture === "ghanaian"
+        ? [
+            `Hey ${name}, how is your day going?`,
+            "Help me reply warmly in Twi and English.",
+            "Let's chat about my plans for today."
+          ]
+        : [
+            `Assalamu alaikum ${name}, how are you today?`,
+            "Help me reply warmly in Hausa and English.",
+            "Let's chat about my plans for today."
+          ];
+      const box = document.getElementById("quickChips");
+      box.innerHTML = chips.map(text => `<button class="chip" onclick="sendText('${text.replace(/'/g, "\\'")}')">${text}</button>`).join("");
+    }
+
+    function addMessage(text, sender) {
+      const container = document.getElementById("chatContainer");
+      const div = document.createElement("div");
+      div.className = "msg " + (sender === "user" ? "user" : "bot");
+      const safeText = text.replace(/</g, "&lt;").replace(/>/g, "&gt;");
+      if (sender === "user") {
+        div.innerHTML = `<div>${safeText}</div><div class="msg-meta"><span>You</span></div>`;
+      } else {
+        div.innerHTML = `
+          <div>${safeText}</div>
+          <div class="msg-meta">
+            <span>${personaLabel()}</span>
+            <button class="listen-btn" onclick="speakText(this.parentElement.previousElementSibling.innerText)">Listen</button>
+          </div>`;
+      }
+      container.appendChild(div);
+      container.scrollTop = container.scrollHeight;
+    }
+
+    function speakText(text) {
+      if (!("speechSynthesis" in window)) return;
+      window.speechSynthesis.cancel();
+      pickBestVoice();
+      const utter = new SpeechSynthesisUtterance(text);
+      if (selectedVoice) utter.voice = selectedVoice;
+      utter.rate = 0.94;
+      utter.pitch = role === "son" ? 0.95 : 1.05;
+      window.speechSynthesis.speak(utter);
+    }
+
+    function toggleVoiceReply() {
+      voiceReply = !voiceReply;
+      const btn = document.getElementById("voiceToggleBtn");
+      btn.textContent = "Voice Reply: " + (voiceReply ? "On" : "Off");
+      btn.classList.toggle("active", voiceReply);
+    }
+
+    function setCulture(next) {
+      culture = next;
+      document.getElementById("cultGhanaian").classList.toggle("active", next === "ghanaian");
+      document.getElementById("cultHausa").classList.toggle("active", next === "hausa");
+      resetChat();
+    }
+
+    function setRole(next) {
+      role = next;
+      document.getElementById("roleSon").classList.toggle("active", next === "son");
+      document.getElementById("roleDaughter").classList.toggle("active", next === "daughter");
+      resetChat();
+    }
+
+    function resetChat() {
+      history = [];
+      const container = document.getElementById("chatContainer");
+      container.innerHTML = '<div class="chips" id="quickChips"></div>';
+      renderChips();
+      addMessage(getGreeting(), "bot");
+    }
+
+    function promptAccessKey() {
+      const current = localStorage.getItem("isu_access_key") || "";
+      const entered = prompt("Enter your ISU App Access Key:", current);
+      if (entered !== null) {
+        localStorage.setItem("isu_access_key", entered.trim());
+      }
+    }
+
+    async function sendText(text) {
+      const clean = text.trim();
+      if (!clean) return;
+      addMessage(clean, "user");
+      history.push({ role: "user", content: clean });
+
+      const status = document.getElementById("statusText");
+      status.textContent = `${personaName()} is thinking...`;
+
+      try {
+        const res = await fetch(WORKER_URL, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "X-App-Key": localStorage.getItem("isu_access_key") || ""
+          },
+          body: JSON.stringify({
+            message: clean,
+            history,
+            culture,
+            role,
+            personaName: personaName()
+          })
+        });
+
+        const data = await res.json();
+        const reply = data.reply || data.error || "Sorry, I couldn't respond just now.";
+        history.push({ role: "assistant", content: reply });
+        addMessage(reply, "bot");
+        if (voiceReply) speakText(reply);
+      } catch (err) {
+        addMessage("Connection issue reaching the server. Please check your Access Key or internet connection.", "bot");
+      } finally {
+        status.textContent = "Ready to talk";
+      }
+    }
+
+    function handleSend(e) {
+      e.preventDefault();
+      const input = document.getElementById("msgInput");
+      const val = input.value;
+      input.value = "";
+      sendText(val);
+    }
+
+    // Speech-to-text microphone input
+    const SpeechRec = window.SpeechRecognition || window.webkitSpeechRecognition;
+    let recognition = null;
+    if (SpeechRec) {
+      recognition = new SpeechRec();
+      recognition.lang = "en-GH";
+      recognition.interimResults = false;
+      recognition.onresult = (e) => {
+        const transcript = e.results[0][0].transcript;
+        sendText(transcript);
+      };
+      recognition.onend = () => {
+        document.getElementById("talkBtn").classList.remove("listening");
+        document.getElementById("talkBtn").textContent = "Talk";
+      };
+    }
+
+    function toggleMic() {
+      if (!recognition) {
+        alert("Voice input is not supported in this browser.");
+        return;
+      }
+      const btn = document.getElementById("talkBtn");
+      if (btn.classList.contains("listening")) {
+        recognition.stop();
+      } else {
+        btn.classList.add("listening");
+        btn.textContent = "Listening...";
+        recognition.start();
+      }
+    }
+
+    if ("serviceWorker" in navigator) {
+      navigator.serviceWorker.register("./service-worker.js").catch(() => {});
+    }
+
+    resetChat();
   </script>
 </body>
 </html>
