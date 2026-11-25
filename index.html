@@ -61,6 +61,7 @@
       position: sticky;
       top: 0;
       z-index: 10;
+      flex-shrink: 0;
     }
 
     .topbar-row {
@@ -202,6 +203,7 @@
     /* Chat Area */
     .chat-scroll {
       flex: 1;
+      min-height: 0;
       overflow-y: auto;
       padding: 16px;
       display: flex;
@@ -214,6 +216,7 @@
       flex-wrap: wrap;
       gap: 8px;
       margin-bottom: 4px;
+      flex-shrink: 0;
     }
 
     .quick-btn {
@@ -238,6 +241,7 @@
       display: flex;
       flex-direction: column;
       max-width: 84%;
+      flex-shrink: 0;
     }
 
     .msg-row.user {
@@ -323,6 +327,7 @@
       background: var(--surface);
       border-top: 1px solid var(--border);
       padding: 10px 14px calc(12px + env(safe-area-inset-bottom));
+      flex-shrink: 0;
     }
 
     .composer-form {
@@ -488,4 +493,430 @@
       <form class="composer-form" id="composerForm">
         <input
           type="text"
-          class="
+          class="composer-input"
+          id="messageInput"
+          placeholder="Talk with AB or Samira in English, Twi, or Hausa..."
+          autocomplete="off"
+        />
+        <button type="button" class="talk-btn" id="talkBtn">Talk</button>
+        <button type="submit" class="send-btn" id="sendBtn">Send</button>
+      </form>
+    </footer>
+  </div>
+
+  <!-- Install Help Modal -->
+  <div class="modal-backdrop" id="installModal" role="dialog" aria-modal="true" aria-labelledby="installTitle">
+    <div class="modal-card">
+      <h2 id="installTitle">Install ISU on Your Phone</h2>
+      <p>Save ISU to your Home Screen so it opens like a regular app with one tap.</p>
+
+      <div class="install-box">
+        <strong>iPhone (Safari)</strong>
+        1. Open this page in <b>Safari</b>.<br />
+        2. Tap the <b>Share</b> button at the bottom or top bar.<br />
+        3. Tap <b>Add to Home Screen</b>, then tap <b>Add</b>.
+      </div>
+
+      <div class="install-box">
+        <strong>Android (Chrome)</strong>
+        1. Open this page in <b>Chrome</b>.<br />
+        2. Tap <b>Install</b> if prompted, or tap the <b>⋮ menu</b>.<br />
+        3. Tap <b>Install app</b> or <b>Add to Home screen</b>.
+      </div>
+
+      <div class="modal-footer">
+        <button type="button" class="chip-btn active" id="nativeInstallBtn" style="display:none;">Install Now</button>
+        <button type="button" class="chip-btn" id="closeInstallBtn">Close</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const WORKER_URL = "https://isu-ghana-api.innovations-worker.workers.dev";
+
+    const state = {
+      role: localStorage.getItem("isu_role") || "son",
+      culture: localStorage.getItem("isu_culture") || "ghanaian",
+      voiceReply: localStorage.getItem("isu_voice_reply") === "true",
+      messages: [],
+      sending: false,
+      deferredPrompt: null,
+    };
+
+    const el = {
+      statusDot: document.getElementById("statusDot"),
+      statusText: document.getElementById("statusText"),
+      voiceReplyBtn: document.getElementById("voiceReplyBtn"),
+      newChatBtn: document.getElementById("newChatBtn"),
+      installBtn: document.getElementById("installBtn"),
+      installModal: document.getElementById("installModal"),
+      closeInstallBtn: document.getElementById("closeInstallBtn"),
+      nativeInstallBtn: document.getElementById("nativeInstallBtn"),
+      chatScroll: document.getElementById("chatScroll"),
+      quickPrompts: document.getElementById("quickPrompts"),
+      composerForm: document.getElementById("composerForm"),
+      messageInput: document.getElementById("messageInput"),
+      talkBtn: document.getElementById("talkBtn"),
+      sendBtn: document.getElementById("sendBtn"),
+    };
+
+    function personaLabel(role = state.role) {
+      return role === "daughter" ? "Samira (Daughter)" : "AB (Son)";
+    }
+
+    function personaShortName(role = state.role) {
+      return role === "daughter" ? "Samira" : "AB";
+    }
+
+    function setStatus(mode, text) {
+      el.statusDot.className = "status-dot" + (mode ? ` ${mode}` : "");
+      el.statusText.textContent = text;
+    }
+
+    function getGreetingText() {
+      const name = personaShortName();
+      const relation = state.role === "daughter" ? "daughter" : "son";
+      if (state.culture === "hausa") {
+        return `Assalamu alaikum! It's your ${relation} ${name} here. Ina kwana—how are you feeling today?`;
+      }
+      return `Maakye! It's your ${relation} ${name} here. How are you doing today, and what's on your mind?`;
+    }
+
+    function renderQuickPrompts() {
+      const name = personaShortName();
+      const prompts =
+        state.culture === "hausa"
+          ? [
+              `Assalamu alaikum ${name}, how is your day going?`,
+              "Help me reply warmly in Hausa and English.",
+              "What's the weather and Maghrib time today?",
+            ]
+          : [
+              `Hey ${name}, how is your day going?`,
+              "Help me reply warmly in Twi and English.",
+              "What's the weather and Maghrib time today?",
+            ];
+
+      el.quickPrompts.innerHTML = "";
+      prompts.forEach((text) => {
+        const btn = document.createElement("button");
+        btn.type = "button";
+        btn.className = "quick-btn";
+        btn.textContent = text;
+        btn.addEventListener("click", () => sendMessage(text));
+        el.quickPrompts.appendChild(btn);
+      });
+    }
+
+    function updateToggleUI() {
+      document.querySelectorAll("[data-culture]").forEach((btn) => {
+        btn.classList.toggle("active", btn.dataset.culture === state.culture);
+      });
+      document.querySelectorAll("[data-role]").forEach((btn) => {
+        btn.classList.toggle("active", btn.dataset.role === state.role);
+      });
+      el.voiceReplyBtn.textContent = `Voice Reply: ${state.voiceReply ? "On" : "Off"}`;
+      el.voiceReplyBtn.classList.toggle("active", state.voiceReply);
+      setStatus("", `Ready with ${personaShortName()}`);
+    }
+
+    /* Voice Selection & Speech Synthesis */
+    let cachedVoices = [];
+    function loadVoices() {
+      if (!("speechSynthesis" in window)) return;
+      cachedVoices = window.speechSynthesis.getVoices() || [];
+    }
+    if ("speechSynthesis" in window) {
+      loadVoices();
+      window.speechSynthesis.onvoiceschanged = loadVoices;
+    }
+
+    function pickBestVoice(role) {
+      if (!cachedVoices.length) loadVoices();
+      if (!cachedVoices.length) return null;
+
+      const femaleHints = ["samantha", "karen", "moira", "tessa", "victoria", "ava", "allison", "susan", "zira", "aria", "jenny", "female", "woman"];
+      const maleHints = ["daniel", "alex", "fred", "oliver", "arthur", "aaron", "david", "mark", "guy", "ryan", "male", "man"];
+      const targetHints = role === "daughter" ? femaleHints : maleHints;
+
+      let best = null;
+      let bestScore = -1;
+
+      for (const v of cachedVoices) {
+        const name = (v.name || "").toLowerCase();
+        const lang = (v.lang || "").toLowerCase();
+        let score = 0;
+
+        if (lang.startsWith("en")) score += 4;
+        if (lang.includes("gh") || lang.includes("ng") || lang.includes("gb")) score += 2;
+        if (name.includes("natural") || name.includes("enhanced") || name.includes("premium") || name.includes("google")) score += 3;
+        if (targetHints.some((hint) => name.includes(hint))) score += 6;
+
+        if (score > bestScore) {
+          bestScore = score;
+          best = v;
+        }
+      }
+      return best;
+    }
+
+    function speakText(text, role = state.role) {
+      if (!("speechSynthesis" in window) || !text) return;
+      window.speechSynthesis.cancel();
+
+      const cleanText = text.replace(/[*#_`~]+/g, "").trim();
+      const utterance = new SpeechSynthesisUtterance(cleanText);
+      const chosenVoice = pickBestVoice(role);
+      if (chosenVoice) utterance.voice = chosenVoice;
+
+      if (role === "daughter") {
+        utterance.pitch = 1.08;
+        utterance.rate = 0.98;
+      } else {
+        utterance.pitch = 0.94;
+        utterance.rate = 0.96;
+      }
+
+      window.speechSynthesis.speak(utterance);
+    }
+
+    function shareToWhatsApp(text, role) {
+      const formatted = `${personaShortName(role)}: ${text}`;
+      const url = `https://wa.me/?text=${encodeURIComponent(formatted)}`;
+      window.open(url, "_blank", "noopener,noreferrer");
+    }
+
+    function appendMessage({ role, content, personaRole = state.role }) {
+      const row = document.createElement("div");
+      row.className = `msg-row ${role}`;
+
+      const bubble = document.createElement("div");
+      bubble.className = "bubble";
+      bubble.textContent = content;
+
+      if (role === "user") {
+        const label = document.createElement("div");
+        label.className = "user-label";
+        label.textContent = "You";
+        bubble.appendChild(label);
+      } else {
+        const meta = document.createElement("div");
+        meta.className = "msg-meta";
+
+        const who = document.createElement("span");
+        who.textContent = personaLabel(personaRole);
+
+        const actions = document.createElement("div");
+        actions.className = "msg-actions";
+
+        const listenBtn = document.createElement("button");
+        listenBtn.type = "button";
+        listenBtn.className = "mini-btn";
+        listenBtn.textContent = "Listen";
+        listenBtn.addEventListener("click", () => speakText(content, personaRole));
+
+        const waBtn = document.createElement("button");
+        waBtn.type = "button";
+        waBtn.className = "mini-btn whatsapp";
+        waBtn.textContent = "WhatsApp";
+        waBtn.addEventListener("click", () => shareToWhatsApp(content, personaRole));
+
+        actions.appendChild(listenBtn);
+        actions.appendChild(waBtn);
+        meta.appendChild(who);
+        meta.appendChild(actions);
+        bubble.appendChild(meta);
+      }
+
+      row.appendChild(bubble);
+      el.chatScroll.appendChild(row);
+      el.chatScroll.scrollTop = el.chatScroll.scrollHeight;
+    }
+
+    function resetConversation() {
+      if ("speechSynthesis" in window) window.speechSynthesis.cancel();
+      state.messages = [];
+      el.chatScroll.innerHTML = "";
+      el.chatScroll.appendChild(el.quickPrompts);
+      renderQuickPrompts();
+
+      const greeting = getGreetingText();
+      state.messages.push({ role: "assistant", content: greeting, personaRole: state.role });
+      appendMessage({ role: "assistant", content: greeting, personaRole: state.role });
+    }
+
+    async function sendMessage(rawText) {
+      const text = (rawText ?? el.messageInput.value).trim();
+      if (!text || state.sending) return;
+
+      el.messageInput.value = "";
+      state.sending = true;
+      el.sendBtn.disabled = true;
+      setStatus("busy", `${personaShortName()} is typing...`);
+
+      const currentRole = state.role;
+
+      state.messages.push({ role: "user", content: text });
+      appendMessage({ role: "user", content: text });
+
+      try {
+        const res = await fetch(WORKER_URL, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ message: text }),
+        });
+
+        let data = {};
+        try {
+          data = await res.json();
+        } catch {
+          throw new Error(`Invalid JSON response from server (${res.status}).`);
+        }
+
+        if (!res.ok) {
+          throw new Error(data.error || `Server error (${res.status}).`);
+        }
+
+        const reply =
+          typeof data.reply === "string" && data.reply.trim()
+            ? data.reply.trim()
+            : "Sorry, I didn't catch that. Could you say it again?";
+
+        state.messages.push({ role: "assistant", content: reply, personaRole: currentRole });
+        appendMessage({ role: "assistant", content: reply, personaRole: currentRole });
+        setStatus("", `Ready with ${personaShortName()}`);
+
+        if (state.voiceReply) {
+          speakText(reply, currentRole);
+        }
+      } catch (err) {
+        const detail = err && err.message ? err.message : "Unable to reach the server.";
+        setStatus("error", "Connection issue");
+        appendMessage({
+          role: "assistant",
+          content: `Error: ${detail}`,
+          personaRole: currentRole,
+        });
+      } finally {
+        state.sending = false;
+        el.sendBtn.disabled = false;
+        el.messageInput.focus();
+      }
+    }
+
+    /* Speech-to-Text Mic Input */
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    let recognition = null;
+    if (SpeechRecognition) {
+      recognition = new SpeechRecognition();
+      recognition.lang = "en-GB";
+      recognition.interimResults = false;
+      recognition.maxAlternatives = 1;
+
+      recognition.onstart = () => {
+        el.talkBtn.classList.add("listening");
+        el.talkBtn.textContent = "Listening...";
+      };
+
+      recognition.onresult = (event) => {
+        const transcript = event.results?.[0]?.[0]?.transcript || "";
+        if (transcript) {
+          el.messageInput.value = transcript;
+          sendMessage(transcript);
+        }
+      };
+
+      recognition.onerror = () => {
+        el.talkBtn.classList.remove("listening");
+        el.talkBtn.textContent = "Talk";
+      };
+
+      recognition.onend = () => {
+        el.talkBtn.classList.remove("listening");
+        el.talkBtn.textContent = "Talk";
+      };
+    } else {
+      el.talkBtn.style.display = "none";
+    }
+
+    /* Event Listeners */
+    document.querySelectorAll("[data-culture]").forEach((btn) => {
+      btn.addEventListener("click", () => {
+        state.culture = btn.dataset.culture;
+        localStorage.setItem("isu_culture", state.culture);
+        updateToggleUI();
+        renderQuickPrompts();
+      });
+    });
+
+    document.querySelectorAll("[data-role]").forEach((btn) => {
+      btn.addEventListener("click", () => {
+        state.role = btn.dataset.role;
+        localStorage.setItem("isu_role", state.role);
+        updateToggleUI();
+        renderQuickPrompts();
+      });
+    });
+
+    el.voiceReplyBtn.addEventListener("click", () => {
+      state.voiceReply = !state.voiceReply;
+      localStorage.setItem("isu_voice_reply", String(state.voiceReply));
+      updateToggleUI();
+    });
+
+    el.newChatBtn.addEventListener("click", resetConversation);
+
+    el.composerForm.addEventListener("submit", (e) => {
+      e.preventDefault();
+      sendMessage();
+    });
+
+    el.talkBtn.addEventListener("click", () => {
+      if (!recognition) return;
+      try {
+        recognition.start();
+      } catch {}
+    });
+
+    /* PWA Install Handling & Service Worker */
+    window.addEventListener("beforeinstallprompt", (e) => {
+      e.preventDefault();
+      state.deferredPrompt = e;
+      el.nativeInstallBtn.style.display = "inline-block";
+    });
+
+    el.installBtn.addEventListener("click", () => {
+      el.installModal.classList.add("open");
+    });
+
+    el.closeInstallBtn.addEventListener("click", () => {
+      el.installModal.classList.remove("open");
+    });
+
+    el.installModal.addEventListener("click", (e) => {
+      if (e.target === el.installModal) {
+        el.installModal.classList.remove("open");
+      }
+    });
+
+    el.nativeInstallBtn.addEventListener("click", async () => {
+      if (!state.deferredPrompt) return;
+      state.deferredPrompt.prompt();
+      await state.deferredPrompt.userChoice;
+      state.deferredPrompt = null;
+      el.nativeInstallBtn.style.display = "none";
+      el.installModal.classList.remove("open");
+    });
+
+    if ("serviceWorker" in navigator) {
+      window.addEventListener("load", () => {
+        navigator.serviceWorker.register("./service-worker.js").catch(() => {});
+      });
+    }
+
+    /* Boot */
+    updateToggleUI();
+    resetConversation();
+  </script>
+</body>
+</html>
