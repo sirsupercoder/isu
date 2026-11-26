@@ -6,35 +6,57 @@
   <title>ISU — Family Companion</title>
 
   <!-- PWA & Mobile App Meta -->
-  <meta name="theme-color" content="#0a0a0a" />
+  <meta name="theme-color" id="themeColorMeta" content="#faf7f2" />
   <meta name="description" content="ISU — Warm family companion with AB and Samira in English, Twi, and Hausa." />
   <link rel="manifest" href="./manifest.webmanifest" />
   <link rel="icon" href="./IMG_4571.JPG" />
   <link rel="apple-touch-icon" href="./IMG_4571.JPG" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
-  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="default" />
   <meta name="apple-mobile-web-app-title" content="ISU" />
 
   <style>
-    :root {
-      --bg: #ffffff;
+    /* Default Theme: AB (Son) — Cream White */
+    :root,
+    body[data-theme="son"] {
+      --bg: #faf7f2;
+      --topbar-bg: rgba(250, 247, 242, 0.94);
       --surface: #ffffff;
-      --surface-elevated: #fafafa;
-      --surface-muted: #f2f2f2;
-      --ink: #0a0a0a;
-      --ink-secondary: #333333;
-      --ink-muted: #6e6e6e;
-      --border: #e2e2e2;
-      --border-strong: #0a0a0a;
-      --accent: #0a0a0a;
-      --accent-contrast: #ffffff;
-      --danger: #111111;
-      --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.04);
-      --shadow-md: 0 8px 28px rgba(0, 0, 0, 0.08);
+      --surface-elevated: #f5f0e6;
+      --surface-muted: #ede6d8;
+      --ink: #1a1815;
+      --ink-secondary: #3a352f;
+      --ink-muted: #6e675c;
+      --border: #dfd6c7;
+      --border-strong: #1a1815;
+      --accent: #1a1815;
+      --accent-contrast: #faf7f2;
+      --user-sub: rgba(250, 247, 242, 0.72);
+      --shadow-sm: 0 1px 3px rgba(26, 24, 21, 0.05);
+      --shadow-md: 0 12px 32px rgba(26, 24, 21, 0.14);
       --radius-xl: 22px;
       --radius-lg: 16px;
       --radius-md: 12px;
       --radius-pill: 999px;
+    }
+
+    /* Daughter Theme: Samira (Daughter) — Navy Blue */
+    body[data-theme="daughter"] {
+      --bg: #0a1529;
+      --topbar-bg: rgba(10, 21, 41, 0.94);
+      --surface: #10203d;
+      --surface-elevated: #14274a;
+      --surface-muted: #19315c;
+      --ink: #f4f7fc;
+      --ink-secondary: #d5dfef;
+      --ink-muted: #93a7c7;
+      --border: #233c69;
+      --border-strong: #f4f7fc;
+      --accent: #f4f7fc;
+      --accent-contrast: #0a1529;
+      --user-sub: rgba(10, 21, 41, 0.7);
+      --shadow-sm: 0 2px 6px rgba(3, 8, 20, 0.28);
+      --shadow-md: 0 14px 36px rgba(2, 6, 16, 0.55);
     }
 
     * {
@@ -51,6 +73,7 @@
       color: var(--ink);
       font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
       -webkit-font-smoothing: antialiased;
+      transition: background-color 0.25s ease, color 0.25s ease;
     }
 
     .app-shell {
@@ -62,6 +85,7 @@
       background: var(--bg);
       border-left: 1px solid var(--border);
       border-right: 1px solid var(--border);
+      transition: background-color 0.25s ease, border-color 0.25s ease;
     }
 
     @media (max-width: 840px) {
@@ -73,7 +97,7 @@
 
     /* Top Header */
     .topbar {
-      background: rgba(255, 255, 255, 0.94);
+      background: var(--topbar-bg);
       backdrop-filter: blur(12px);
       border-bottom: 1px solid var(--border);
       padding: calc(14px + env(safe-area-inset-top)) 18px 14px;
@@ -81,6 +105,7 @@
       top: 0;
       z-index: 20;
       flex-shrink: 0;
+      transition: background-color 0.25s ease, border-color 0.25s ease;
     }
 
     .topbar-row {
@@ -117,7 +142,6 @@
       width: 100%;
       height: 100%;
       object-fit: cover;
-      filter: grayscale(100%) contrast(1.08);
       display: block;
     }
 
@@ -144,21 +168,20 @@
       height: 7px;
       border-radius: 50%;
       background: var(--ink);
-      transition: transform 0.2s ease, opacity 0.2s ease;
+      transition: transform 0.2s ease, opacity 0.2s ease, background-color 0.25s ease;
     }
 
     .status-dot.busy {
       background: var(--ink-muted);
-      animation: pulseMonochrome 1.1s infinite ease-in-out;
+      animation: pulseStatus 1.1s infinite ease-in-out;
     }
 
     .status-dot.error {
-      background: var(--ink);
       border: 2px solid var(--ink);
       background: transparent;
     }
 
-    @keyframes pulseMonochrome {
+    @keyframes pulseStatus {
       0%, 100% { opacity: 0.35; transform: scale(0.9); }
       50% { opacity: 1; transform: scale(1.15); }
     }
@@ -215,6 +238,7 @@
       padding: 3px;
       border-radius: var(--radius-pill);
       border: 1px solid var(--border);
+      transition: background-color 0.25s ease, border-color 0.25s ease;
     }
 
     .seg-btn {
@@ -249,6 +273,7 @@
       flex-direction: column;
       gap: 16px;
       background: var(--bg);
+      transition: background-color 0.25s ease;
     }
 
     .persona-banner {
@@ -256,11 +281,12 @@
       align-items: center;
       justify-content: space-between;
       gap: 12px;
-      padding: 12px 16px;
+      padding: 13px 16px;
       border: 1px solid var(--border);
       border-radius: var(--radius-lg);
       background: var(--surface-elevated);
       flex-shrink: 0;
+      transition: background-color 0.25s ease, border-color 0.25s ease;
     }
 
     .persona-banner-left {
@@ -270,17 +296,16 @@
     }
 
     .persona-avatar {
-      width: 42px;
-      height: 42px;
+      width: 44px;
+      height: 44px;
       border-radius: 50%;
       object-fit: cover;
-      border: 1px solid var(--border-strong);
-      filter: grayscale(100%) contrast(1.06);
+      border: 1.5px solid var(--border-strong);
       flex-shrink: 0;
     }
 
     .persona-meta-title {
-      font-size: 14px;
+      font-size: 14.5px;
       font-weight: 700;
       color: var(--ink);
     }
@@ -341,6 +366,7 @@
       line-height: 1.55;
       white-space: pre-wrap;
       word-break: break-word;
+      transition: background-color 0.25s ease, color 0.25s ease, border-color 0.25s ease;
     }
 
     .msg-row.user .bubble {
@@ -379,7 +405,7 @@
 
     .mini-btn {
       border: 1px solid var(--border);
-      background: var(--surface);
+      background: var(--surface-elevated);
       color: var(--ink);
       font-size: 12px;
       font-weight: 600;
@@ -399,7 +425,7 @@
       font-size: 11px;
       letter-spacing: 0.04em;
       text-transform: uppercase;
-      color: rgba(255, 255, 255, 0.72);
+      color: var(--user-sub);
       margin-top: 6px;
     }
 
@@ -409,6 +435,7 @@
       border-top: 1px solid var(--border);
       padding: 12px 16px calc(14px + env(safe-area-inset-bottom));
       flex-shrink: 0;
+      transition: background-color 0.25s ease, border-color 0.25s ease;
     }
 
     .composer-form {
@@ -426,7 +453,7 @@
       padding: 12px 16px;
       border-radius: var(--radius-pill);
       outline: none;
-      transition: border-color 0.15s ease, background 0.15s ease;
+      transition: border-color 0.15s ease, background 0.15s ease, color 0.25s ease;
     }
 
     .composer-input::placeholder {
@@ -487,7 +514,7 @@
     .modal-backdrop {
       position: fixed;
       inset: 0;
-      background: rgba(10, 10, 10, 0.55);
+      background: rgba(5, 10, 20, 0.62);
       backdrop-filter: blur(4px);
       display: none;
       align-items: center;
@@ -540,9 +567,9 @@
       display: block;
       margin-bottom: 4px;
       color: var(--ink);
-      font-size: 13.5px;
+      font-size: 13px;
       text-transform: uppercase;
-      letter-spacing: 0.04em;
+      letter-spacing: 0.05em;
     }
 
     .modal-footer {
@@ -553,7 +580,7 @@
     }
   </style>
 </head>
-<body>
+<body data-theme="son">
   <div class="app-shell">
     <header class="topbar">
       <div class="topbar-row">
@@ -681,6 +708,7 @@
     };
 
     const el = {
+      themeColorMeta: document.getElementById("themeColorMeta"),
       statusDot: document.getElementById("statusDot"),
       statusText: document.getElementById("statusText"),
       voiceReplyBtn: document.getElementById("voiceReplyBtn"),
@@ -722,6 +750,14 @@
     function setStatus(mode, text) {
       el.statusDot.className = "status-dot" + (mode ? ` ${mode}` : "");
       el.statusText.textContent = text;
+    }
+
+    function applyPersonaTheme() {
+      const theme = state.role === "daughter" ? "daughter" : "son";
+      document.body.setAttribute("data-theme", theme);
+      if (el.themeColorMeta) {
+        el.themeColorMeta.setAttribute("content", theme === "daughter" ? "#0a1529" : "#faf7f2");
+      }
     }
 
     function getGreetingText() {
@@ -771,6 +807,7 @@
     }
 
     function updateToggleUI() {
+      applyPersonaTheme();
       document.querySelectorAll("[data-culture]").forEach((btn) => {
         btn.classList.toggle("active", btn.dataset.culture === state.culture);
       });
@@ -1108,4 +1145,3 @@
   </script>
 </body>
 </html>
-tml>
